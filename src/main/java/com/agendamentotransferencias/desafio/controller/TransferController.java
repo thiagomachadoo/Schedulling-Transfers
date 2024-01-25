@@ -40,14 +40,13 @@ public class TransferController {
           produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> createTransfer(@RequestBody Transfer transferDTO) {
 
-    Optional<Transfer> transfer = Optional.empty();
     var object = transferService.scheduledTransfer(transferDTO);
 
     if (object.getValueForTransfer() != 0.0) {
-      transfer = Optional.of(transferRepository.save(transferDTO));
+      transferRepository.save(transferDTO);
+      return new ResponseEntity<>("Transferência agendada com sucesso!\n", HttpStatus.CREATED);
     }
 
-
-    return new ResponseEntity<>("Transferência agendada com sucesso!\n" + transfer, HttpStatus.CREATED);
+    return new ResponseEntity<>("Não foi possivel agendar a transferência, aumente o range de data da transferência!\n", HttpStatus.BAD_REQUEST);
   }
 }

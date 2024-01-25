@@ -4,6 +4,7 @@ package com.agendamentotransferencias.desafio.controller;
 import com.agendamentotransferencias.desafio.model.*;
 import com.agendamentotransferencias.desafio.repository.*;
 import com.agendamentotransferencias.desafio.security.*;
+import com.agendamentotransferencias.desafio.service.UserService;
 import jakarta.validation.*;
 import lombok.*;
 import org.springframework.http.*;
@@ -21,6 +22,7 @@ public class AuthenticationController {
   private final AuthenticationManager authenticationManager;
   private final UserRepository repository;
   private final TokenService tokenService;
+  private final UserService userService;
 
   @PostMapping("/login")
   public ResponseEntity login(@RequestBody @Valid AuthenticationDTO data) {
@@ -38,9 +40,13 @@ public class AuthenticationController {
 
     var encryptedPassword = new BCryptPasswordEncoder().encode(data.getPassword());
     var newUser = new User(data.getLogin(), encryptedPassword);
+    var user = userService.isValidUser(newUser);
 
-    this.repository.save(newUser);
+    if (user.isPresent()){
+      repository.save(newUser);
+      return new ResponseEntity("Usuario criado com sucesso!", HttpStatus.CREATED);
+    }
 
-    return ResponseEntity.ok().build();
+    return new ResponseEntity("Usuário não possui dados completos para cadastro! Tente novamente", HttpStatus.BAD_REQUEST);
   }
 }

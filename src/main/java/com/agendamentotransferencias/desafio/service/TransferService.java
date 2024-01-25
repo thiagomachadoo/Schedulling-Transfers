@@ -3,6 +3,7 @@ package com.agendamentotransferencias.desafio.service;
 import com.agendamentotransferencias.desafio.model.Transfer;
 import com.agendamentotransferencias.desafio.utils.ConstantsDaysToTransfer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TransferService {
     private static final Map<Range, Double> TAX_MAP = new HashMap<>();
 
@@ -49,23 +51,16 @@ public class TransferService {
 
     private void setTaxValue(Transfer dataToTransfer, double tax) {
         if (tax <= 0.0) {
-            throw new IllegalStateException("Não será possível realizar a transferência");
+            dataToTransfer.setValueForTransfer(0.0);
         }
         var valueWithoutTax = dataToTransfer.getValueForTransfer() - (dataToTransfer.getValueForTransfer() * (tax / 100));
         dataToTransfer.setValueForTransfer(valueWithoutTax);
     }
 
-    private static class Range {
-        private final long start;
-        private final long end;
-
-        public Range(long start, long end) {
-            this.start = start;
-            this.end = end;
-        }
+    private record Range(long start, long end) {
 
         public boolean isInRange(long value) {
-            return value >= start && value <= end;
+                return value >= start && value <= end;
+            }
         }
-    }
 }
